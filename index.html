@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>画像一括リネームツール</title>
     
-    <!-- ★追加：GitHub Pages等でFFmpegを動かすためのセキュリティ解除スクリプト -->
-    <script src="https://cdn.jsdelivr.net/npm/coi-serviceworker@0.1.6/coi-serviceworker.min.js"></script>
+    <!-- ★修正：外部CDNからの読み込みをやめ、同じ階層のファイルを読み込むように変更 -->
+    <!-- GitHub Pagesで公開する際は、このファイルを手動で同じ場所にアップロードする必要があります -->
+    <script src="coi-serviceworker.min.js"></script>
     
     <!-- Tailwind CSS (デザイン用) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,6 +42,28 @@
     </div>
 
     <div class="p-6 md:p-8">
+        <!-- ★追加：セキュリティ設定の警告バナー（必要なファイルがない時だけ表示されます） -->
+        <div id="sabWarning" class="hidden bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded-r-lg shadow-sm">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 mr-3 flex-shrink-0 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div>
+                    <h3 class="font-bold text-lg">動画変換を利用するための追加設定（GitHub Pages用）</h3>
+                    <p class="mt-1 text-sm">GitHub Pagesのセキュリティ制限により、このままでは動画の圧縮が実行できません。以下の手順で設定ファイルを追加してください。</p>
+                    <ol class="list-decimal ml-5 mt-3 space-y-2 text-sm font-medium">
+                        <li>
+                            <a href="https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.min.js" target="_blank" download class="text-blue-600 hover:text-blue-800 underline bg-blue-50 px-2 py-1 rounded transition-colors">
+                                coi-serviceworker.min.js をダウンロード
+                            </a>
+                            <span class="text-xs text-yellow-700 ml-1">※リンク先を右クリック等で保存</span>
+                        </li>
+                        <li>ダウンロードしたファイルを、GitHub上の <code>index.html</code> と同じ階層（リポジトリ）にアップロード</li>
+                        <li>アップロード後、このページを再読み込みする（バナーが消えれば準備完了です）</li>
+                    </ol>
+                    <p class="mt-3 text-xs text-yellow-700">※画像（JPG）の変換のみであれば、この設定を行わなくてもそのままご利用いただけます。</p>
+                </div>
+            </div>
+        </div>
+
         <!-- ファイルの種類の選択 -->
         <div class="mb-6">
             <label class="block text-sm font-bold text-gray-700 mb-3">ファイルの種類を選んでください</label>
@@ -147,6 +170,7 @@
     const compressVideoCheckbox = document.getElementById('compressVideo');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const dropZone = document.getElementById('dropZone');
+    const sabWarning = document.getElementById('sabWarning');
 
     let ffmpeg = null; // FFmpegのインスタンスを保持
     let fileItems = []; // ファイルとメタデータを保持する配列 [{file, dim, ext, isVideo, selected, error}]
@@ -157,6 +181,14 @@
     let draggedIndices = [];
     let dragOverItem = null;
     let dropPosition = 'before';
+
+    // ★追加：ページ読み込み時に設定ファイル(SharedArrayBuffer)が有効かチェック
+    window.addEventListener('DOMContentLoaded', () => {
+        // SharedArrayBufferが存在しない ＝ coi-serviceworkerが動いていない
+        if (typeof SharedArrayBuffer === 'undefined') {
+            sabWarning.classList.remove('hidden');
+        }
+    });
 
     // すべてのファイルをキャンセルする処理
     clearAllBtn.addEventListener('click', () => {
@@ -716,6 +748,17 @@
             return;
         }
 
+        // ★追加：動画処理時、必要な設定が完了しているか（SharedArrayBufferがあるか）チェック
+        let type = 'image';
+        for (const radio of mediaTypeRadios) {
+            if (radio.checked) type = radio.value;
+        }
+        
+        if (type === 'video' && typeof SharedArrayBuffer === 'undefined') {
+            showStatus('❌ エラー: 動画変換に必要な設定ファイル（coi-serviceworker.min.js）が不足しています。画面上部の案内をご確認ください。', 'error');
+            return;
+        }
+
         if (typeof JSZip === 'undefined') {
             showStatus('❌ エラー: ZIP処理プログラムが読み込めませんでした。ネット接続を確認してください。', 'error');
             return;
@@ -727,11 +770,6 @@
         
         const zip = new JSZip();
         let count = parseInt(startNumberInput.value, 10) || 1;
-
-        let type = 'image';
-        for (const radio of mediaTypeRadios) {
-            if (radio.checked) type = radio.value;
-        }
         const prefix = type === 'image' ? 'img' : 'mov';
 
         try {
