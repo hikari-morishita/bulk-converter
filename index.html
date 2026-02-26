@@ -36,10 +36,8 @@
 </head>
 <body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex items-start justify-center">
 
-<!-- 縦長のスッキリしたレイアウトにするため max-w-3xl に変更 -->
 <div class="w-full max-w-3xl mx-auto space-y-6">
     
-    <!-- ツールタイトル -->
     <header class="text-center mb-8">
         <h1 class="text-3xl font-extrabold text-slate-900 flex items-center justify-center tracking-tight">
             <svg class="w-8 h-8 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -48,10 +46,8 @@
         <p class="text-slate-500 mt-2 text-sm font-medium">ブラウザ完結型の画像・動画一括リネーム＆圧縮ツール</p>
     </header>
 
-    <!-- メインコンテンツを縦1列に配置 -->
     <div class="space-y-6">
         
-        <!-- STEP 1: 変換モード -->
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex items-center mb-4">
                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full mr-2">STEP 1</span>
@@ -77,7 +73,6 @@
                 </label>
             </div>
             
-            <!-- 動画オプション -->
             <div id="videoOptions" class="mt-4 hidden animate-fade-in">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <label class="flex items-center cursor-pointer">
@@ -92,7 +87,6 @@
             </div>
         </section>
 
-        <!-- STEP 2: 出力設定 -->
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex items-center mb-4">
                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full mr-2">STEP 2</span>
@@ -116,7 +110,6 @@
             </div>
         </section>
 
-        <!-- STEP 3 & 4: プレビュー＆実行エリア -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
             
             <div class="p-6 border-b border-slate-100">
@@ -126,7 +119,6 @@
                         <h2 class="text-lg font-bold text-slate-800">ファイルを追加して確認</h2>
                     </div>
                     
-                    <!-- アクションボタン群 -->
                     <div class="flex items-center gap-2 self-end sm:self-auto">
                         <button id="selectAllBtn" type="button" class="hidden text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors focus:outline-none shadow-sm whitespace-nowrap">
                             全選択/解除
@@ -140,7 +132,6 @@
                     </div>
                 </div>
 
-                <!-- ドラッグ＆ドロップエリア -->
                 <div id="dropZone" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 hover:border-blue-400 transition-all cursor-pointer relative overflow-hidden group">
                     <div class="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                         <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
@@ -151,7 +142,6 @@
                 <p id="videoWarning" class="mt-2 text-xs text-amber-600 hidden font-medium">※動画は処理が重いため、一度に数個〜10個程度ずつの追加をおすすめします。</p>
             </div>
 
-            <!-- プレビューリスト (崩れ防止のため高さを制限) -->
             <div class="bg-slate-50/50 p-4 border-b border-slate-100">
                 <div id="previewArea" class="overflow-y-auto max-h-[50vh] min-h-[200px] pr-2">
                     <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-70">
@@ -161,14 +151,12 @@
                 </div>
             </div>
 
-            <!-- 実行エリア -->
             <div class="p-6 bg-white">
                 <button id="processBtn" disabled class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md transform active:scale-[0.99]">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     <span id="processBtnText">変換するファイルを追加してください</span>
                 </button>
                 
-                <!-- 進捗ゲージ -->
                 <div id="progressContainer" class="mt-4 hidden w-full">
                     <div class="flex justify-between items-center mb-1 text-xs font-bold text-blue-700">
                         <span id="progressText">変換処理中...</span>
@@ -176,13 +164,11 @@
                     </div>
                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                         <div id="progressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out relative" style="width: 0%">
-                            <!-- きらめきエフェクト -->
                             <div class="absolute top-0 left-0 bottom-0 right-0 bg-white opacity-20" style="animation: shimmer 1s infinite linear;"></div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- ステータスメッセージ -->
                 <div id="status" class="mt-3 text-center text-sm font-bold hidden"></div>
             </div>
         </section>
@@ -219,40 +205,28 @@
     const selectAllBtn = document.getElementById('selectAllBtn');
     const dropZone = document.getElementById('dropZone');
     const processBtnText = document.getElementById('processBtnText');
-    const sabWarning = document.getElementById('sabWarning');
     
-    // プログレスバーの要素を取得
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const progressPercent = document.getElementById('progressPercent');
 
-    let ffmpeg = null; // FFmpegのインスタンスを保持
-    let fileItems = []; // ファイルとメタデータを保持する配列 [{file, dim, ext, isVideo, selected, error}]
-    let isProcessingFiles = false; // 連続追加防止フラグ
-    let lastCheckedIndex = null; // Shift選択用
+    let ffmpeg = null; 
+    let fileItems = []; 
+    let isProcessingFiles = false; 
+    let lastCheckedIndex = null; 
 
-    // ドラッグ＆ドロップ用変数
     let draggedIndices = [];
     let dragOverItem = null;
     let dropPosition = 'before';
 
-    // ページ読み込み時に設定ファイル(SharedArrayBuffer)が有効かチェック
-    window.addEventListener('DOMContentLoaded', () => {
-        if (typeof SharedArrayBuffer === 'undefined') {
-            sabWarning.classList.remove('hidden');
-        }
-    });
-
-    // すべてのファイルをキャンセルする処理
     clearAllBtn.addEventListener('click', () => {
         fileItems = [];
-        fileInput.value = ''; // ファイル選択欄もリセット
+        fileInput.value = ''; 
         lastCheckedIndex = null;
         updatePreview();
     });
 
-    // 全選択/全解除の処理
     selectAllBtn.addEventListener('click', () => {
         const hasSelected = fileItems.some(item => item.selected && !item.error);
         const newState = !hasSelected;
@@ -262,7 +236,6 @@
         updatePreview();
     });
 
-    // 名前順に並べ替える処理
     sortBtn.addEventListener('click', () => {
         if (fileItems.length === 0) return;
         fileItems.sort((a, b) => a.file.name.localeCompare(b.file.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -270,7 +243,6 @@
         updatePreview();
     });
 
-    // ファイルをリストから個別に削除(キャンセル)する関数
     window.removeFile = (index) => {
         fileItems.splice(index, 1);
         if (fileItems.length === 0) {
@@ -280,7 +252,6 @@
         updatePreview();
     };
 
-    // ファイル種類選択時の処理
     const updateMediaType = () => {
         let type = 'image';
         for (const radio of mediaTypeRadios) {
@@ -307,7 +278,6 @@
         radio.addEventListener('change', updateMediaType);
     }
 
-    // 画像のサイズを取得する関数
     const getImageDimensions = (file) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -320,7 +290,6 @@
         });
     };
 
-    // 動画のサイズを取得する関数
     const getVideoDimensions = (file) => {
         return new Promise((resolve, reject) => {
             const video = document.createElement('video');
@@ -356,7 +325,6 @@
         });
     };
 
-    // 動画のサムネイル（キャプチャ）を生成してArrayBufferを返す関数
     const getVideoThumbnail = (file) => {
         return new Promise((resolve, reject) => {
             const video = document.createElement('video');
@@ -438,7 +406,6 @@
         });
     };
 
-    // 画像をJPGに変換してArrayBufferを返す関数
     const convertToJpgArrayBuffer = (file) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -472,7 +439,6 @@
         });
     };
 
-    // UIとドラッグイベントを初期化する関数
     const attachEvents = () => {
         const items = document.querySelectorAll('.preview-item');
         const checkboxes = document.querySelectorAll('.file-checkbox');
@@ -607,7 +573,6 @@
         });
     };
 
-    // プレビューを更新する関数
     const updatePreview = () => {
         if (fileItems.length === 0) {
             clearAllBtn.classList.add('hidden');
@@ -660,35 +625,26 @@
                 continue;
             }
             
-            // 選択されている（チェックが入っている）場合のみ連番を付ける。未選択はハイフンなど。
-            let displayNewName = '-';
-            let displayName = '-';
-            let titleName = 'チェックすると変換後の名前が表示されます';
+            // ★チェックの有無に関わらず、すべてのファイルに連番を振って変換対象とする
+            const newName = `${prefix}${count}_${item.dim.width}_${item.dim.height}.${item.ext}`;
+            let displayNewName = newName;
+            let titleName = newName;
+            let displayName = newName;
             
-            if (item.selected) {
-                const newName = `${prefix}${count}_${item.dim.width}_${item.dim.height}.${item.ext}`;
-                displayNewName = newName;
-                titleName = newName;
-                
-                if (item.isVideo) {
-                    const thumbName = newName.replace('.mp4', '.jpg');
-                    displayName = `<span class="block">${newName}</span><span class="block text-[11px] text-slate-400 mt-0.5 leading-none">+ ${thumbName}</span>`;
-                    titleName = `${newName} と サムネイル`;
-                } else {
-                    displayName = newName;
-                }
-                count++; // 選択されているものだけ連番を進める
-            } else {
-                displayName = `<span class="text-slate-300 italic">変換スキップ</span>`;
+            if (item.isVideo) {
+                const thumbName = newName.replace('.mp4', '.jpg');
+                displayName = `<span class="block">${newName}</span><span class="block text-[11px] text-slate-400 mt-0.5 leading-none">+ ${thumbName}</span>`;
+                titleName = `${newName} と サムネイル`;
             }
             
-            const bgClass = item.selected ? 'bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-100' : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 opacity-60';
+            count++; // すべてのファイルで連番を進める
+            
+            const bgClass = item.selected ? 'bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-100' : 'bg-white border-slate-200 shadow-sm hover:border-slate-300';
             const textClass = item.selected ? 'text-slate-700' : 'text-slate-500';
 
             html += `
                 <li data-index="${i}" draggable="true" class="preview-item p-3 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 group ${bgClass} border rounded-xl transition-all cursor-move">
                     <div class="flex items-center sm:flex-1 min-w-0">
-                        <!-- ドラッグハンドル(SVG) -->
                         <div class="mr-3 text-slate-300 cursor-grab hover:text-slate-500 transition-colors drag-handle flex-shrink-0" title="ドラッグして移動">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
                         </div>
@@ -703,7 +659,7 @@
                         <div class="hidden sm:flex flex-shrink-0 text-slate-300 px-3">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
-                        <div class="${item.selected ? 'text-blue-700' : 'text-slate-400'} font-bold truncate sm:text-right flex-1 min-w-0" title="${titleName}">
+                        <div class="text-blue-700 font-bold truncate sm:text-right flex-1 min-w-0" title="${titleName}">
                             ${displayName}
                         </div>
                         <button type="button" onclick="removeFile(${i})" class="ml-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1.5 transition-colors focus:outline-none flex-shrink-0 cursor-pointer" title="削除">
@@ -715,23 +671,22 @@
         html += '</ul>';
         previewArea.innerHTML = html;
 
-        // ボタンのテキスト更新
         const hasSelected = fileItems.some(item => item.selected && !item.error);
         selectAllBtn.textContent = hasSelected ? '選択をすべて解除' : 'すべて選択';
         
-        const selectedCount = fileItems.filter(item => item.selected && !item.error).length;
-        if (selectedCount > 0) {
-            processBtnText.textContent = `チェックした ${selectedCount} 件をZIPでダウンロード`;
+        // ★実行ボタンのテキストと状態を「すべての正常ファイル」に基づいて更新する
+        const validCount = fileItems.filter(item => !item.error).length;
+        if (validCount > 0) {
+            processBtnText.textContent = `すべてのファイル（${validCount}件）をZIPでダウンロード`;
             processBtn.disabled = false;
         } else {
-            processBtnText.textContent = `変換するファイルにチェックを入れてください`;
+            processBtnText.textContent = `変換するファイルを追加してください`;
             processBtn.disabled = true;
         }
 
         attachEvents();
     };
 
-    // ファイルを追加する共通処理
     const handleFiles = async (newFiles) => {
         if (isProcessingFiles) return; 
         isProcessingFiles = true;
@@ -762,7 +717,6 @@
 
             const newItems = [];
             for (const file of filesToProcess) {
-                // ★修正：追加時は「未選択（false）」状態にする
                 let item = { file: file, selected: false, error: false }; 
                 try {
                     const isVideo = file.type.startsWith('video/') || currentType === 'video';
@@ -794,13 +748,11 @@
         isProcessingFiles = false;
     };
 
-    // ファイル選択時
     fileInput.addEventListener('change', (e) => {
         handleFiles(e.target.files);
         fileInput.value = ''; 
     });
 
-    // ドラッグ＆ドロップ
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('border-blue-400', 'bg-blue-50');
@@ -825,7 +777,6 @@
 
     startNumberInput.addEventListener('input', updatePreview);
 
-    // ステータスメッセージ表示
     const showStatus = (msg, type = 'info') => {
         statusDiv.textContent = msg;
         statusDiv.className = 'mt-4 text-center text-sm font-bold p-3 rounded-lg animate-fade-in ';
@@ -835,26 +786,24 @@
         statusDiv.classList.remove('hidden');
     };
 
-    // ゲージ表示
     const updateProgress = (percent) => {
         progressContainer.classList.remove('hidden');
         progressBar.style.width = `${percent}%`;
         progressPercent.textContent = `${percent}%`;
     };
 
-    // ゲージ隠す
     const hideProgress = () => {
         progressContainer.classList.add('hidden');
         progressBar.style.width = '0%';
         progressPercent.textContent = `0%`;
     };
 
-    // ZIP作成＆ダウンロード処理
     processBtn.addEventListener('click', async () => {
-        const targetItems = fileItems.filter(item => item.selected && !item.error);
+        // ★エラーのないすべてのファイルを変換対象とする
+        const targetItems = fileItems.filter(item => !item.error);
         
         if (targetItems.length === 0) {
-            alert('変換するファイルにチェックを入れてください。');
+            alert('変換するファイルを追加してください。');
             return;
         }
 
@@ -873,7 +822,6 @@
             return;
         }
 
-        // 実行中はUIを無効化
         processBtn.disabled = true;
         fileInput.disabled = true;
         const originalBtnText = processBtnText.textContent;
@@ -1030,12 +978,12 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
 
+            // ★変換完了後は選択状態をリセットしておく
             targetItems.forEach(item => item.selected = false);
             updatePreview();
 
             showStatus('✅ ダウンロードが完了しました！', 'success');
             
-            // 3秒後にステータスを消す
             setTimeout(() => {
                 if(statusDiv.classList.contains('bg-green-50')) {
                     statusDiv.classList.add('hidden');
