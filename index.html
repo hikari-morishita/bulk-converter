@@ -42,28 +42,6 @@
     </div>
 
     <div class="p-6 md:p-8">
-        <!-- ★追加：セキュリティ設定の警告バナー（必要なファイルがない時だけ表示されます） -->
-        <div id="sabWarning" class="hidden bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded-r-lg shadow-sm">
-            <div class="flex items-start">
-                <svg class="w-6 h-6 mr-3 flex-shrink-0 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                <div>
-                    <h3 class="font-bold text-lg">動画変換を利用するための追加設定（GitHub Pages用）</h3>
-                    <p class="mt-1 text-sm">GitHub Pagesのセキュリティ制限により、このままでは動画の圧縮が実行できません。以下の手順で設定ファイルを追加してください。</p>
-                    <ol class="list-decimal ml-5 mt-3 space-y-2 text-sm font-medium">
-                        <li>
-                            <a href="https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.min.js" target="_blank" download class="text-blue-600 hover:text-blue-800 underline bg-blue-50 px-2 py-1 rounded transition-colors">
-                                coi-serviceworker.min.js をダウンロード
-                            </a>
-                            <span class="text-xs text-yellow-700 ml-1">※リンク先を右クリック等で保存</span>
-                        </li>
-                        <li>ダウンロードしたファイルを、GitHub上の <code>index.html</code> と同じ階層（リポジトリ）にアップロード</li>
-                        <li>アップロード後、このページを再読み込みする（バナーが消えれば準備完了です）</li>
-                    </ol>
-                    <p class="mt-3 text-xs text-yellow-700">※画像（JPG）の変換のみであれば、この設定を行わなくてもそのままご利用いただけます。</p>
-                </div>
-            </div>
-        </div>
-
         <!-- ファイルの種類の選択 -->
         <div class="mb-6">
             <label class="block text-sm font-bold text-gray-700 mb-3">ファイルの種類を選んでください</label>
@@ -170,7 +148,6 @@
     const compressVideoCheckbox = document.getElementById('compressVideo');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const dropZone = document.getElementById('dropZone');
-    const sabWarning = document.getElementById('sabWarning');
 
     let ffmpeg = null; // FFmpegのインスタンスを保持
     let fileItems = []; // ファイルとメタデータを保持する配列 [{file, dim, ext, isVideo, selected, error}]
@@ -181,14 +158,6 @@
     let draggedIndices = [];
     let dragOverItem = null;
     let dropPosition = 'before';
-
-    // ★追加：ページ読み込み時に設定ファイル(SharedArrayBuffer)が有効かチェック
-    window.addEventListener('DOMContentLoaded', () => {
-        // SharedArrayBufferが存在しない ＝ coi-serviceworkerが動いていない
-        if (typeof SharedArrayBuffer === 'undefined') {
-            sabWarning.classList.remove('hidden');
-        }
-    });
 
     // すべてのファイルをキャンセルする処理
     clearAllBtn.addEventListener('click', () => {
@@ -837,18 +806,18 @@
                             if (videoBitrateKbps > 8000) videoBitrateKbps = 8000; 
                             if (videoBitrateKbps < 200) videoBitrateKbps = 200; // 最低限の画質を担保
                             
-                            // ★エラー原因の修正1: 解像度計算時の「奇数エラー」防止と、4K動画での「メモリ不足エラー」を防止
+                            // ★修正1: 処理速度を劇的に上げるため、最大解像度を1920(フルHD)から1280(HD)へ引き下げます
                             let scaleWidth = 'trunc(iw/2)*2';
                             let scaleHeight = 'trunc(ih/2)*2';
                             
-                            if (dim.width > 1920 || dim.height > 1920) {
-                                // 元が巨大すぎる場合は最大1920px(フルHD)に収める
+                            if (dim.width > 1280 || dim.height > 1280) {
+                                // 元が巨大すぎる場合は最大1280px(HD)に収めて計算量を大幅に減らす
                                 if (dim.width > dim.height) {
-                                    scaleWidth = '1920';
-                                    scaleHeight = 'trunc((1920*ih/iw)/2)*2';
+                                    scaleWidth = '1280';
+                                    scaleHeight = 'trunc((1280*ih/iw)/2)*2';
                                 } else {
-                                    scaleHeight = '1920';
-                                    scaleWidth = 'trunc((1920*iw/ih)/2)*2';
+                                    scaleHeight = '1280';
+                                    scaleWidth = 'trunc((1280*iw/ih)/2)*2';
                                 }
                             }
 
@@ -862,13 +831,13 @@
                             
                             const vfFilter = `scale=${scaleWidth}:${scaleHeight}`;
                             
-                            // ★エラー原因の修正2: ブラウザが処理中にパンク（クラッシュ）しない安全な設定へ調整
+                            // ★修正2: 画質を少しだけ妥協し、処理速度を優先する設定ギア(veryfast)に変更
                             await ffmpeg.run(
                                 '-i', safeFileName, 
                                 '-vf', vfFilter,
                                 '-vcodec', 'libx264',
-                                '-preset', 'fast',     // mediumはブラウザ環境ではメモリ不足になりやすいためfastへ
-                                '-profile:v', 'main',  // highも負荷が高すぎるためmainへ
+                                '-preset', 'veryfast', // ★ fast から veryfast に変更し、エンコード速度をアップ
+                                '-profile:v', 'main',  
                                 '-b:v', `${videoBitrateKbps}k`, 
                                 '-maxrate', `${Math.floor(videoBitrateKbps * 1.1)}k`, 
                                 '-bufsize', `${videoBitrateKbps * 2}k`, 
@@ -876,7 +845,7 @@
                                 '-c:a', 'aac', 
                                 '-b:a', '96k', 
                                 '-ac', '2', 
-                                '-max_muxing_queue_size', '1024', // 処理中のメモリ溢れエラーを防ぐおまじない
+                                '-max_muxing_queue_size', '1024', 
                                 'output.mp4'
                             );
                         } else {
