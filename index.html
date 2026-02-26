@@ -59,7 +59,7 @@
                     <div class="rounded-xl border-2 border-gray-200 bg-white p-4 sm:p-6 text-center hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all [&>svg]:text-gray-400 peer-checked:[&>svg]:text-blue-500 [&>.title]:text-gray-700 peer-checked:[&>.title]:text-blue-700 [&>.desc]:text-gray-500 peer-checked:[&>.desc]:text-blue-600 shadow-sm">
                         <svg class="w-10 h-10 mx-auto mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         <span class="title block text-lg font-bold transition-colors">動画</span>
-                        <span class="desc block text-xs mt-1 transition-colors">MP4形式に変換<br>(接頭辞: mov)</span>
+                        <span class="desc block text-xs mt-1 transition-colors">MP4形式に変換し、JPG形式のサムネイルを生成<br>(接頭辞: mov)</span>
                     </div>
                 </label>
             </div>
@@ -131,6 +131,14 @@
         
         <!-- ステータス表示 -->
         <div id="status" class="mt-4 text-center text-sm font-medium hidden"></div>
+
+        <!-- ★追加: 進捗ゲージ（プログレスバー） -->
+        <div id="progressContainer" class="mt-4 hidden max-w-md mx-auto">
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden shadow-inner">
+                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+            </div>
+            <div id="progressText" class="text-center text-xs font-bold text-blue-700">0%</div>
+        </div>
     </div>
 </div>
 
@@ -148,6 +156,12 @@
     const compressVideoCheckbox = document.getElementById('compressVideo');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const dropZone = document.getElementById('dropZone');
+    const sabWarning = document.getElementById('sabWarning');
+    
+    // ★追加: プログレスバーの要素を取得
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
 
     let ffmpeg = null; // FFmpegのインスタンスを保持
     let fileItems = []; // ファイルとメタデータを保持する配列 [{file, dim, ext, isVideo, selected, error}]
@@ -710,6 +724,19 @@
         if (type === 'error') statusDiv.classList.add('text-red-600');
     };
 
+    // ★追加: ゲージを表示・更新する関数
+    const updateProgress = (percent) => {
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `変換処理中... ${percent}%`;
+    };
+
+    // ★追加: ゲージを隠す関数
+    const hideProgress = () => {
+        progressContainer.classList.add('hidden');
+        progressBar.style.width = '0%';
+    };
+
     // ZIP作成＆ダウンロード処理
     processBtn.addEventListener('click', async () => {
         if (fileItems.length === 0) {
@@ -763,11 +790,11 @@
                                 corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
                             });
                             
-                            // 進捗状況を表示するイベントを追加
+                            // ★修正: 進捗をゲージ（プログレスバー）に反映させる
                             ffmpeg.setProgress(({ ratio }) => {
                                 if (ratio >= 0 && ratio <= 1) {
                                     const percent = Math.round(ratio * 100);
-                                    showStatus(`⏳ 変換処理中... ${percent}% 完了 (ブラウザを閉じないでください)`, 'info');
+                                    updateProgress(percent);
                                 }
                             });
 
@@ -845,6 +872,7 @@
                                 '-c:a', 'aac', 
                                 '-b:a', '96k', 
                                 '-ac', '2', 
+                                '-threads', '2', // ★追加(フリーズ対策): CPUを使い切りすぎないようにスレッドを制限する
                                 '-max_muxing_queue_size', '1024', 
                                 'output.mp4'
                             );
@@ -862,12 +890,16 @@
                         const data = ffmpeg.FS('readFile', 'output.mp4');
                         arrayBuffer = data.buffer;
                         
+                        // 処理が終わったらゲージを隠す
+                        hideProgress();
+                        
                         // メモリ解放のために一時ファイルを削除
                         ffmpeg.FS('unlink', safeFileName);
                         ffmpeg.FS('unlink', 'output.mp4');
 
                     } catch (e) {
                         console.error('動画のMP4変換に失敗しました:', e);
+                        hideProgress();
                         // ★エラー原因の修正3: なぜサイズが変わらなかったのかユーザーに明確に伝える
                         showStatus(`⚠️ ${file.name} はエラーのため圧縮できませんでした。元のサイズで保存します。`, 'error');
                         alert(`【変換エラー】\n${file.name} の圧縮中にブラウザの処理限界（メモリ不足や形式エラー）に達しました。\nファイルは圧縮されず、元のサイズのままZIPに梱包されます。`);
@@ -921,9 +953,11 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
 
+            hideProgress(); // 念のため完了時にも隠す
             showStatus('✅ 完了しました！ダウンロードを確認してください。', 'success');
         } catch (error) {
             console.error(error);
+            hideProgress();
             showStatus(`❌ エラーが発生しました: ${error.message}`, 'error');
         } finally {
             // 処理が終わったらボタンを有効化
